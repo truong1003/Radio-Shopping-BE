@@ -1,5 +1,5 @@
 // src/account/account.service.ts
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Account } from './account.entity';
@@ -19,9 +19,24 @@ export class AccountService {
   }
 
   async create(dto: CreateAccountDto) {
-    const hashedPassword = await bcrypt.hash(dto.password, SALT_ROUNDS);
-    const account = this.accountRepo.create({ ...dto, password: hashedPassword });
-    return this.accountRepo.save(account);
+    try {
+      const existing = await this.accountRepo.findOne({ where: { email: dto.email } });
+      if (existing) {
+        throw new BadRequestException('Email đã tồn tại');
+      }
+
+      const hashedPassword = await bcrypt.hash(dto.password, SALT_ROUNDS);
+
+      const account = this.accountRepo.create({ ...dto, password: hashedPassword });
+      return await this.accountRepo.save(account);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      console.error('Account creation failed:', error);
+      throw new InternalServerErrorException('Tạo tài khoản thất bại');
+    }
   }
 
   findById(id: number) {

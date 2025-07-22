@@ -1,4 +1,3 @@
-// src/schedule/schedule.controller.ts
 import { Controller, Post, Body, Get, Param, Put, Delete, UseGuards } from '@nestjs/common';
 import { ScheduleService } from './schedule.service';
 import { CreateScheduleDto, UpdateScheduleDto } from './schedule.dto';

@@ -9,3 +9,8 @@ export enum Role {
   brand = 'brand',
   user = 'user',
 }
+
+export enum Status {
+  active = 'active',
+  inactive = 'inactive',
+}

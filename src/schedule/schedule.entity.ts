@@ -7,13 +7,13 @@ export class Schedule {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   consultant: string;
 
   @Column({ type: 'date' })
   date: string;
 
-  @Column({ type: 'time' })
+  @Column({ type: 'varchar', length: 50 })
   time: string;
 
   @Column({ type: 'varchar', length: 255 })

@@ -1,10 +1,11 @@
 // src/schedule/schedule.dto.ts
 import { Transform } from 'class-transformer';
-import { IsDateString, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 import dayjs from 'dayjs';
 
 export class CreateScheduleDto {
-  @Transform(({ value }) => dayjs(value, 'DD/MM/YYYY').format('YYYY-MM-DD'))
+  @IsString()
+  @IsNotEmpty()
   date: string;
 
   @IsString()

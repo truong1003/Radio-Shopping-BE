@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Brand } from './brand.entity';
 import { CreateBrandDto } from './brand.dto';
 import { Account } from '../accounts/account.entity';
+import { Status } from 'src/types/type';
 
 @Injectable()
 export class BrandService {
@@ -13,11 +14,11 @@ export class BrandService {
   ) {}
 
   async findAll() {
-    return this.repo.find({ relations: ['account'] });
+    return this.repo.find({ where: { deleted: false }, relations: ['account', 'products'] });
   }
 
   async findOneWithAuth(id: number, user: { userId: number; role: string }) {
-    const brand = await this.repo.findOne({ where: { id }, relations: ['account'] });
+    const brand = await this.repo.findOne({ where: { id }, relations: ['account', 'products'] });
 
     if (!brand) {
       throw new NotFoundException('Brand not found');
@@ -41,6 +42,7 @@ export class BrandService {
       phone_number: dto.phone_number,
       tags: dto.tags,
       description: dto.description,
+      status: Status.active,
       account,
     });
     return this.repo.save(brand);
@@ -55,9 +57,20 @@ export class BrandService {
     return this.repo.save(brand);
   }
 
+  async updateStatus(id: number) {
+    const brand = await this.repo.findOneBy({ id });
+    if (!brand) throw new NotFoundException('Brand not found');
+
+    brand.status = brand.status === Status.active ? Status.inactive : Status.active;
+
+    return this.repo.save(brand);
+  }
+
   async remove(id: number) {
     const brand = await this.repo.findOneBy({ id });
     if (!brand) throw new NotFoundException('Brand not found');
-    return this.repo.remove(brand);
+
+    brand.deleted = true;
+    return this.repo.save(brand);
   }
 }

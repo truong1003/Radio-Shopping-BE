@@ -46,6 +46,12 @@ export class BrandController {
     return this.service.update(+id, dto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Put('status/:id')
+  updateStatus(@Param('id') id: string) {
+    return this.service.updateStatus(+id);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.service.remove(+id);

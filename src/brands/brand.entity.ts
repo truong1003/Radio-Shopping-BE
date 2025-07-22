@@ -1,5 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToOne,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { Account } from '../accounts/account.entity';
+import { Product } from 'src/products/product.entity';
+import { Schedule } from 'src/schedule/schedule.entity';
+import { Status } from 'src/types/type';
 
 @Entity()
 export class Brand {
@@ -12,7 +23,7 @@ export class Brand {
   @Column()
   phone_number: string;
 
-  @Column()
+  @Column({ default: 'abc' })
   tags: string;
 
   @Column()
@@ -24,7 +35,23 @@ export class Brand {
   @Column()
   description: string;
 
+  @Column({
+    type: 'enum',
+    enum: Status,
+    default: Status.active,
+  })
+  status: Status;
+
+  @Column({ default: false })
+  deleted: boolean;
+
   @ManyToOne(() => Account, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'account_id' })
   account: Account;
+
+  @OneToMany(() => Product, (product) => product.brand)
+  products: Product[];
+
+  @OneToMany(() => Schedule, (schedule) => schedule.brand)
+  schedules: Schedule[];
 }

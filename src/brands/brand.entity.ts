@@ -11,6 +11,9 @@ import { Account } from '../accounts/account.entity';
 import { Product } from 'src/products/product.entity';
 import { Schedule } from 'src/schedule/schedule.entity';
 import { Status } from 'src/types/type';
+import { Voucher } from 'src/voucher/voucher.entity';
+import { Customer } from 'src/customers/customer.entity';
+// import { Customer } from 'src/customers/customer.entity';
 
 @Entity()
 export class Brand {
@@ -54,4 +57,10 @@ export class Brand {
 
   @OneToMany(() => Schedule, (schedule) => schedule.brand)
   schedules: Schedule[];
+
+  @OneToMany(() => Voucher, (voucher) => voucher.brand)
+  vouchers: Voucher[];
+
+  @OneToMany(() => Customer, (customer) => customer.brand)
+  customers: Customer[];
 }

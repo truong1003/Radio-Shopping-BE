@@ -5,6 +5,7 @@ import { Schedule } from './schedule.entity';
 import { Repository } from 'typeorm';
 import { CreateScheduleDto, UpdateScheduleDto } from './schedule.dto';
 import { Brand } from 'src/brands/brand.entity';
+import { LiveStatus } from 'src/types/type';
 
 @Injectable()
 export class ScheduleService {
@@ -14,11 +15,23 @@ export class ScheduleService {
     @InjectRepository(Brand) private brandRepo: Repository<Brand>,
   ) {}
 
+  getScheduleStatus(schedule: Schedule): LiveStatus {
+    if (!schedule.date || !schedule.time) return LiveStatus.invalid;
+
+    const [fromStr, toStr] = schedule.time.split('-').map((s) => s.trim());
+    const from = dayjs(`${schedule.date}T${fromStr}`);
+    const to = dayjs(`${schedule.date}T${toStr}`);
+    const now = dayjs();
+
+    if (!from.isValid() || !to.isValid()) return LiveStatus.invalid;
+    if (now.isAfter(from) && now.isBefore(to)) return LiveStatus.live;
+    if (now.isAfter(to)) return LiveStatus.confirmed;
+    return LiveStatus.upcoming;
+  }
+
   async create(dto: CreateScheduleDto) {
     const brand = await this.brandRepo.findOneBy({ title_brand: dto.title_brand });
     if (!brand) throw new NotFoundException('Brand not found');
-
-    // const formattedDate = dayjs(dto.date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
     const schedule = this.repo.create({
       date: dto.date,
@@ -31,19 +44,36 @@ export class ScheduleService {
     return this.repo.save(schedule);
   }
 
-  findAll() {
-    return this.repo.find({ relations: ['brand'] });
+  async findAll() {
+    const schedules = await this.repo.find();
+
+    for (const schedule of schedules) {
+      const newStatus = this.getScheduleStatus(schedule);
+      if (schedule.status !== newStatus) {
+        schedule.status = newStatus;
+        await this.repo.save(schedule);
+      }
+    }
+
+    const sortedSchedules = await this.repo.find({ relations: ['brand'] });
+
+    return sortedSchedules.sort((a, b) => {
+      const aStart = dayjs(`${a.date}T${a.time.split('-')[0].trim()}`);
+      const bStart = dayjs(`${b.date}T${b.time.split('-')[0].trim()}`);
+      return aStart.diff(bStart);
+    });
   }
 
   findOne(id: number) {
     return this.repo.findOne({ where: { id }, relations: ['brand'] });
   }
 
-  async update(id: number, dto: UpdateScheduleDto) {
+  async update(id: number, dto: Partial<UpdateScheduleDto>) {
+    const brand = await this.brandRepo.findOneBy({ title_brand: dto.title_brand });
     const schedule = await this.repo.findOneBy({ id });
     if (!schedule) throw new NotFoundException('Schedule not found');
 
-    Object.assign(schedule, dto);
+    Object.assign(schedule, { ...dto, brand });
     return this.repo.save(schedule);
   }
 

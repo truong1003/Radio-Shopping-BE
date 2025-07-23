@@ -1,6 +1,7 @@
 // src/schedule/schedule.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Brand } from '../brands/brand.entity';
+import { LiveStatus } from 'src/types/type';
 
 @Entity()
 export class Schedule {
@@ -21,6 +22,16 @@ export class Schedule {
 
   @Column({ type: 'varchar', length: 255 })
   product: string;
+
+  @Column({
+    type: 'enum',
+    enum: LiveStatus,
+    default: LiveStatus.upcoming,
+  })
+  status: LiveStatus;
+
+  @Column({ default: false })
+  deleted: boolean;
 
   @ManyToOne(() => Brand, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'brand_id' })

@@ -14,11 +14,17 @@ export class BrandService {
   ) {}
 
   async findAll() {
-    return this.repo.find({ where: { deleted: false }, relations: ['account', 'products'] });
+    return this.repo.find({
+      where: { deleted: false },
+      relations: ['account', 'products', 'vouchers'],
+    });
   }
 
   async findOneWithAuth(id: number, user: { userId: number; role: string }) {
-    const brand = await this.repo.findOne({ where: { id }, relations: ['account', 'products'] });
+    const brand = await this.repo.findOne({
+      where: { id },
+      relations: ['account', 'products', 'vouchers'],
+    });
 
     if (!brand) {
       throw new NotFoundException('Brand not found');

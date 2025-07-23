@@ -9,6 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { BrandModule } from './brands/brand.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { ProductModule } from './products/product.module';
+import { VoucherModule } from './voucher/voucher.module';
+import { CustomerModule } from './customers/customer.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { ProductModule } from './products/product.module';
     BrandModule,
     ScheduleModule,
     ProductModule,
+    VoucherModule,
+    CustomerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

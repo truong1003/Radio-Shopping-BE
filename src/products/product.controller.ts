@@ -37,8 +37,8 @@ export class ProductController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
   create(@Body() dto: CreateProductDto, @Request() req) {
-    const user = req.user
-    return this.service.create(dto,user);
+    const user = req.user;
+    return this.service.create(dto, user);
   }
 
   // @UseGuards(JwtAuthGuard, RolesGuard)

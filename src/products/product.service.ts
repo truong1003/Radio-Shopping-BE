@@ -31,20 +31,18 @@ export class ProductService {
   // }
 
   async create(dto: CreateProductDto, user: { userId: number; role: string }) {
-    console.log(user.userId)
+    console.log(user.userId);
 
     const brand = await this.brandRepo.findOne({
       where: { title_brand: dto.title_brand },
       relations: ['account'],
     });
 
-    console.log(brand?.account.id)
-
     if (!brand) throw new NotFoundException('Brand not found');
 
-    if (user.role !== 'admin' && brand.account.id !== user.userId) {
-      throw new ForbiddenException('You are not allowed to access this brand');
-    }
+    // if (user.role !== 'admin' && brand.account.id !== user.userId) {
+    //   throw new ForbiddenException('You are not allowed to access this brand');
+    // }
 
     const product = this.repo.create({
       title_product: dto.title_product,

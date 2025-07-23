@@ -28,7 +28,7 @@ export class ScheduleController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateScheduleDto) {
+  update(@Param('id') id: string, @Body() dto: Partial<UpdateScheduleDto>) {
     return this.service.update(+id, dto);
   }
 

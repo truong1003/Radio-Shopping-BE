@@ -1,5 +1,13 @@
 import { Brand } from 'src/brands/brand.entity';
-import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  JoinColumn,
+  ManyToOne,
+  UpdateDateColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class Product {
@@ -11,6 +19,12 @@ export class Product {
 
   @Column()
   description: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => Brand, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'brand_id' })

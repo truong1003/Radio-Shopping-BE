@@ -2,10 +2,11 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToOne,
   JoinColumn,
   ManyToOne,
   OneToMany,
+  UpdateDateColumn,
+  CreateDateColumn,
 } from 'typeorm';
 import { Account } from '../accounts/account.entity';
 import { Product } from 'src/products/product.entity';
@@ -44,6 +45,12 @@ export class Brand {
     default: Status.active,
   })
   status: Status;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @Column({ default: false })
   deleted: boolean;

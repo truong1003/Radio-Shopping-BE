@@ -16,14 +16,14 @@ export class BrandService {
   async findAll() {
     return this.repo.find({
       where: { deleted: false },
-      relations: ['account', 'products', 'vouchers'],
+      relations: ['account', 'products', 'vouchers', 'customers'],
     });
   }
 
   async findOneWithAuth(id: number, user: { userId: number; role: string }) {
     const brand = await this.repo.findOne({
       where: { id },
-      relations: ['account', 'products', 'vouchers'],
+      relations: ['account', 'products', 'vouchers', 'customers'],
     });
 
     if (!brand) {

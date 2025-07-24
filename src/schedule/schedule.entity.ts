@@ -1,5 +1,13 @@
 // src/schedule/schedule.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  UpdateDateColumn,
+  CreateDateColumn,
+} from 'typeorm';
 import { Brand } from '../brands/brand.entity';
 import { LiveStatus } from 'src/types/type';
 
@@ -32,6 +40,12 @@ export class Schedule {
 
   @Column({ default: false })
   deleted: boolean;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => Brand, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'brand_id' })

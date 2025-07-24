@@ -1,6 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  UpdateDateColumn,
+  CreateDateColumn,
+} from 'typeorm';
 import { Brand } from 'src/brands/brand.entity';
-import { CustomerStatus, Role } from 'src/types/type';
+import { CustomerStatus } from 'src/types/type';
 
 @Entity()
 export class Customer {
@@ -26,21 +34,30 @@ export class Customer {
   @Column({ length: 255, nullable: true })
   tags: string;
 
+  @Column({ length: 255, nullable: true })
+  note: string;
+
   @Column({
     type: 'enum',
     enum: CustomerStatus,
   })
   status: CustomerStatus;
 
-  @Column({ length: 255, nullable: true })
+  @Column({ type: 'float', nullable: true })
+  order_amount: number | null;
+
+  @Column({ length: 255 })
   brand_favorite: string;
 
-  @Column({ type: 'int', default: 0 })
-  orders: number;
-
-  @Column({ type: 'int', default: 0 })
-  number_of_call: number;
+  @Column({ nullable: true, type: 'varchar' })
+  product: string | null;
 
   @Column({ default: false })
   deleted: boolean;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

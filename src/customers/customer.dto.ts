@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { CustomerStatus } from 'src/types/type';
 
 export class CreateCustomerDto {
   @IsString()
@@ -21,9 +22,17 @@ export class CreateCustomerDto {
   @IsNotEmpty()
   brand_favorite: string;
 
+  @IsOptional()
+  @IsNumber()
+  order_amount?: number;
+
+  @IsOptional()
+  @IsString()
+  product: string;
+
   @IsString()
   @IsNotEmpty()
-  status: string;
+  status: CustomerStatus;
 
   @IsString()
   @IsNotEmpty()

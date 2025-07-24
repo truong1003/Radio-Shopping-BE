@@ -1,6 +1,13 @@
 import { Brand } from 'src/brands/brand.entity';
 import { Role } from 'src/types/type';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  UpdateDateColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class Account {
@@ -22,6 +29,12 @@ export class Account {
 
   @Column({ length: 100 })
   password: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @OneToMany(() => Brand, (brand) => brand.account)
   brands: Brand[];

@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Account } from './account.entity';
 import { CreateAccountDto } from './account.dto';
 import * as bcrypt from 'bcrypt';
+import { Role } from 'src/types/type';
 
 const SALT_ROUNDS = 10;
 @Injectable()
@@ -15,7 +16,7 @@ export class AccountService {
   ) {}
 
   findAll() {
-    return this.accountRepo.find();
+    return this.accountRepo.find({ where: { role: Role.user } });
   }
 
   async create(dto: CreateAccountDto) {

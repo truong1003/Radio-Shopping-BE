@@ -8,6 +8,7 @@ import {
   Put,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { BrandService } from './brand.service';
 import { CreateBrandDto } from './brand.dto';
@@ -21,8 +22,8 @@ export class BrandController {
   constructor(private readonly service: BrandService) {}
 
   @Get()
-  findAll() {
-    return this.service.findAll();
+  findAll(@Query('search') search?: string) {
+    return this.service.findAll(search);
   }
 
   @UseGuards(JwtAuthGuard)

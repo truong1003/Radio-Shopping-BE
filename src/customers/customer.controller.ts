@@ -26,12 +26,10 @@ export class CustomerController {
     return this.service.findAll(phone);
   }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Get(':id')
-  // findOne(@Param('id') id: string, @Request() req) {
-  //   const user = req.user;
-  //   return this.service.findOneWithAuth(+id, user);
-  // }
+  @Get('stats')
+  getPhoneStatsWithLatestCustomer() {
+    return this.service.getPhoneStatsWithLatestCustomer();
+  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
@@ -39,21 +37,8 @@ export class CustomerController {
     return this.service.create(dto);
   }
 
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(Role.admin)
-  // @Put(':id')
-  // update(@Param('id') id: string, @Body() dto: Partial<CreateCustomerDto>) {
-  //   return this.service.update(+id, dto);
-  // }
-
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Put('status/:id')
-  // updateStatus(@Param('id') id: string) {
-  //   return this.service.updateStatus(+id);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.service.remove(+id);
-  // }
+  @Get('today')
+  getTodayCustomers() {
+    return this.service.getTodayCustomers();
+  }
 }

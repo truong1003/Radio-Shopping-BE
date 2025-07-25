@@ -22,6 +22,11 @@ export class ScheduleController {
     return this.service.findAll();
   }
 
+  @Get('today')
+  findAllToDay() {
+    return this.service.findAllToDay();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(+id);

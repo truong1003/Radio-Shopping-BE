@@ -13,11 +13,24 @@ export class BrandService {
     @InjectRepository(Account) private accountRepo: Repository<Account>,
   ) {}
 
-  async findAll() {
-    return this.repo.find({
-      where: { deleted: false },
-      relations: ['account', 'products', 'vouchers', 'customers'],
-    });
+  async findAll(search?: string) {
+    const query = this.repo
+      .createQueryBuilder('brand')
+      .leftJoinAndSelect('brand.account', 'account')
+      .leftJoinAndSelect('brand.products', 'products')
+      .leftJoinAndSelect('brand.vouchers', 'vouchers')
+      .leftJoinAndSelect('brand.customers', 'customers')
+      .where('brand.deleted = false');
+
+    if (search) {
+      query.andWhere(`(brand.title_brand LIKE :search OR brand.name LIKE :search)`, {
+        search: `%${search}%`,
+      });
+    }
+
+    query.orderBy('brand.createdAt', 'DESC');
+
+    return query.getMany();
   }
 
   async findOneWithAuth(id: number, user: { userId: number; role: string }) {

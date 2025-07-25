@@ -64,6 +64,16 @@ export class ScheduleService {
     });
   }
 
+  async findAllToDay() {
+    const schedulesToday = await this.repo
+      .createQueryBuilder('schedule')
+      .leftJoinAndSelect('schedule.brand', 'brand')
+      .where('DATE(schedule.date) = CURDATE()')
+      .getMany();
+
+    return schedulesToday;
+  }
+
   findOne(id: number) {
     return this.repo.findOne({ where: { id }, relations: ['brand'] });
   }

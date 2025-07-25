@@ -11,9 +11,20 @@ export class ProductService {
     @InjectRepository(Product) private repo: Repository<Product>,
     @InjectRepository(Brand) private brandRepo: Repository<Brand>,
   ) {}
+  async findAll(search?: string) {
+    const query = this.repo
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.brand', 'brand');
 
-  async findAll() {
-    return this.repo.find({ relations: ['brand'] });
+    if (search?.trim()) {
+      query.andWhere(`(brand.title_brand LIKE :search OR product.title_product LIKE :search)`, {
+        search: `%${search}%`,
+      });
+    }
+
+    query.orderBy('product.createdAt', 'DESC');
+
+    return query.getMany();
   }
 
   // async findOneWithAuth(id: number, user: { userId: number; role: string }) {
@@ -62,9 +73,9 @@ export class ProductService {
   //   return this.repo.save(brand);
   // }
 
-  // async remove(id: number) {
-  //   const brand = await this.repo.findOneBy({ id });
-  //   if (!brand) throw new NotFoundException('Brand not found');
-  //   return this.repo.remove(brand);
-  // }
+  async remove(id: number) {
+    const product = await this.repo.findOneBy({ id });
+    if (!product) throw new NotFoundException('Product not found');
+    return this.repo.remove(product);
+  }
 }

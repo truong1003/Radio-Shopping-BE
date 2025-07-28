@@ -8,7 +8,9 @@ import {
   Min,
   Max,
   IsNotEmpty,
+  IsEnum,
 } from 'class-validator';
+import { DiscountType } from 'src/types/type';
 
 export class CreateVoucherDto {
   @IsString()
@@ -19,30 +21,28 @@ export class CreateVoucherDto {
   @IsNotEmpty()
   title_brand: string;
 
-  @IsOptional()
-  @IsNumber({}, { message: 'discount_percent must be a number' })
-  @Min(0)
-  @Max(100)
-  discount_percent?: number;
+  @IsString()
+  @IsNotEmpty()
+  product_apply: string;
 
-  @IsOptional()
-  @IsNumber({}, { message: 'discount_amount must be a number' })
-  @Min(0)
-  discount_amount?: number;
+  @IsEnum(DiscountType)
+  discount_type: DiscountType;
 
-  @IsOptional()
-  @IsDateString()
-  start_date?: string;
+  @IsString()
+  discount_value: number;
 
   @IsOptional()
   @IsDateString()
-  end_date?: string;
+  start_date: string;
+
+  @IsOptional()
+  @IsDateString()
+  end_date: string;
 
   @IsOptional()
   @IsString()
   description?: string;
 
-  @IsInt()
-  @Min(1)
+  @IsString()
   total_voucher: number;
 }

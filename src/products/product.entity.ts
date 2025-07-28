@@ -26,7 +26,7 @@ export class Product {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Brand, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Brand, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'brand_id' })
   brand: Brand;
 }

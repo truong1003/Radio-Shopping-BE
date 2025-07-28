@@ -29,3 +29,8 @@ export enum CustomerStatus {
   CONSULT = 'CONSULT',
   NOT_INTERESTED = 'NOT_INTERESTED',
 }
+
+export enum DiscountType {
+  percent = 'percent',
+  amount = 'amount',
+}

@@ -55,7 +55,7 @@ export class Brand {
   @Column({ default: false })
   deleted: boolean;
 
-  @ManyToOne(() => Account, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Account, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'account_id' })
   account: Account;
 

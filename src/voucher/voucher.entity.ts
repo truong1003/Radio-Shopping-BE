@@ -8,29 +8,36 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { Brand } from 'src/brands/brand.entity';
+import { CustomerStatus, DiscountType } from 'src/types/type';
 
 @Entity()
 export class Voucher {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Brand, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Brand, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'brand_id' })
   brand: Brand;
 
   @Column({ unique: true, length: 50 })
   code: string;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  discount_percent: number;
+  @Column({ type: 'text', nullable: false })
+  product_apply: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  discount_amount: number;
+  @Column({
+    type: 'enum',
+    enum: DiscountType,
+  })
+  discount_type: DiscountType;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'float', nullable: false })
+  discount_value: number;
+
+  @Column({ type: 'date', nullable: false })
   start_date: string;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'date', nullable: false })
   end_date: string;
 
   @Column({ type: 'text', nullable: true })

@@ -58,8 +58,8 @@ export class CustomerService {
     };
   }
 
-  async getPhoneStatsWithLatestCustomer() {
-    const result = await this.repo
+  async getPhoneStatsWithLatestCustomer(search?: string) {
+    const query = this.repo
       .createQueryBuilder('c')
       .innerJoin(
         (qb) =>
@@ -88,11 +88,19 @@ export class CustomerService {
             .where('orders.phone_number = c.phone_number')
             .andWhere("orders.status = 'ORDER'"),
         'totalOrders',
-      )
-      .orderBy('c.createdAt', 'DESC')
-      .getRawAndEntities();
+      );
 
-    const { raw, entities } = result;
+    // 👇 Thêm điều kiện tìm kiếm nếu có search
+    if (search) {
+      query.andWhere(
+        `(c.phone_number LIKE :search OR c.name LIKE :search OR c.email LIKE :search)`,
+        { search: `%${search}%` },
+      );
+    }
+
+    query.orderBy('c.createdAt', 'DESC');
+
+    const { raw, entities } = await query.getRawAndEntities();
 
     return entities.map((customer, index) => ({
       customer,

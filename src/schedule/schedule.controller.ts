@@ -37,6 +37,8 @@ export class ScheduleController {
     return this.service.update(+id, dto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.admin)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.service.remove(+id);

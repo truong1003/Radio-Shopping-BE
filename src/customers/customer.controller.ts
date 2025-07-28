@@ -27,8 +27,8 @@ export class CustomerController {
   }
 
   @Get('stats')
-  getPhoneStatsWithLatestCustomer() {
-    return this.service.getPhoneStatsWithLatestCustomer();
+  getPhoneStatsWithLatestCustomer(@Query('search') search?: string) {
+    return this.service.getPhoneStatsWithLatestCustomer(search);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

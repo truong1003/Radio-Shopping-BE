@@ -50,6 +50,12 @@ export class VouchersService {
     return this.repo.save(schedule);
   }
 
+  async findOne(id: number) {
+    const voucher = await this.repo.findOneBy({ id });
+    if (!voucher) throw new NotFoundException('Product not found');
+    return voucher;
+  }
+
   async remove(id: number) {
     const voucher = await this.repo.findOneBy({ id });
     if (!voucher) throw new NotFoundException('Product not found');

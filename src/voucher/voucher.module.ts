@@ -10,5 +10,6 @@ import { VoucherController } from './voucher.controller';
   imports: [TypeOrmModule.forFeature([Voucher, Brand])],
   providers: [VouchersService],
   controllers: [VoucherController],
+  exports: [TypeOrmModule],
 })
 export class VoucherModule {}

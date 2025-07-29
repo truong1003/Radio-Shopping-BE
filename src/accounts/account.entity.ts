@@ -7,6 +7,7 @@ import {
   OneToMany,
   UpdateDateColumn,
   CreateDateColumn,
+  ManyToOne,
 } from 'typeorm';
 
 @Entity()
@@ -17,7 +18,6 @@ export class Account {
   @Column({
     type: 'enum',
     enum: Role,
-    default: Role.user,
   })
   role: Role;
 
@@ -30,12 +30,15 @@ export class Account {
   @Column({ length: 100 })
   password: string;
 
+  @Column({ default: false })
+  deleted: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => Brand, (brand) => brand.account)
+  @ManyToOne(() => Brand, (brand) => brand.account)
   brands: Brand[];
 }

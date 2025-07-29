@@ -22,6 +22,11 @@ export class VoucherController {
     return this.service.findAll(search);
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.service.findOne(+id);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.service.remove(+id);

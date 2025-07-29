@@ -11,6 +11,7 @@ import { ScheduleModule } from './schedule/schedule.module';
 import { ProductModule } from './products/product.module';
 import { VoucherModule } from './voucher/voucher.module';
 import { CustomerModule } from './customers/customer.module';
+import { HistoryModule } from './history/history.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CustomerModule } from './customers/customer.module';
     ProductModule,
     VoucherModule,
     CustomerModule,
+    HistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

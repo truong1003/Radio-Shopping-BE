@@ -1,16 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Not, Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { Brand } from '../brands/brand.entity';
 import { Customer } from './customer.entity';
 import { CreateCustomerDto } from './customer.dto';
-import { CustomerStatus } from 'src/types/type';
+import { Voucher } from 'src/voucher/voucher.entity';
+import { History } from 'src/history/history.entity';
 
 @Injectable()
 export class CustomerService {
   constructor(
     @InjectRepository(Customer) private repo: Repository<Customer>,
     @InjectRepository(Brand) private brandRepo: Repository<Brand>,
+    @InjectRepository(Voucher) private voucherRepo: Repository<Voucher>,
+    @InjectRepository(History) private historyRepo: Repository<History>,
   ) {}
 
   async findAll(phone?: string) {
@@ -58,6 +61,10 @@ export class CustomerService {
     };
   }
 
+  getCustomerById(phone_number: string) {
+    return this.repo.find({ where: { phone_number: phone_number } });
+  }
+
   async getPhoneStatsWithLatestCustomer(search?: string) {
     const query = this.repo
       .createQueryBuilder('c')
@@ -90,7 +97,6 @@ export class CustomerService {
         'totalOrders',
       );
 
-    // 👇 Thêm điều kiện tìm kiếm nếu có search
     if (search) {
       query.andWhere(
         `(c.phone_number LIKE :search OR c.name LIKE :search OR c.email LIKE :search)`,
@@ -110,20 +116,6 @@ export class CustomerService {
     }));
   }
 
-  // async findOneWithAuth(id: number, user: { userId: number; role: string }) {
-  //   const brand = await this.repo.findOne({ where: { id }, relations: ['account'] });
-
-  //   if (!brand) {
-  //     throw new NotFoundException('Brand not found');
-  //   }
-
-  //   if (user.role !== 'admin' && brand.account.id !== user.userId) {
-  //     throw new ForbiddenException('You are not allowed to access this brand');
-  //   }
-
-  //   return brand;
-  // }
-
   async create(dto: CreateCustomerDto) {
     const brand = await this.brandRepo.findOne({
       where: { title_brand: dto.brand_favorite },
@@ -131,6 +123,10 @@ export class CustomerService {
     });
 
     if (!brand) throw new NotFoundException('Brand not found');
+
+    const voucher = await this.voucherRepo.findOne({
+      where: { code: dto.code },
+    });
 
     const newCustomer = this.repo.create({
       name: dto.name,
@@ -145,6 +141,22 @@ export class CustomerService {
       brand_favorite: dto.brand_favorite,
     });
 
-    return this.repo.save(newCustomer);
+    const savedCustomer = await this.repo.save(newCustomer);
+
+    if (voucher) {
+      const historyVoucher = this.historyRepo.create({
+        send_type: dto.send_type,
+        phone_number: dto.phone_number,
+        voucher,
+      });
+
+      await this.historyRepo.save(historyVoucher);
+      if (voucher.voucher_sended >= 0) {
+        voucher.voucher_sended += 1;
+        await this.voucherRepo.save(voucher);
+      }
+    }
+
+    return savedCustomer;
   }
 }

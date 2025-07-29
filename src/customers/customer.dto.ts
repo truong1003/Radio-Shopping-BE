@@ -37,4 +37,12 @@ export class CreateCustomerDto {
   @IsString()
   @IsNotEmpty()
   note: string;
+
+  @IsString()
+  @IsNotEmpty()
+  send_type: string;
+
+  @IsString()
+  @IsNotEmpty()
+  code: string;
 }

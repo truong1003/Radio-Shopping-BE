@@ -31,14 +31,19 @@ export class CustomerController {
     return this.service.getPhoneStatsWithLatestCustomer(search);
   }
 
+  @Get('today')
+  getTodayCustomers() {
+    return this.service.getTodayCustomers();
+  }
+
+  @Get(':phone_number')
+  getCustomerById(@Param('phone_number') phone_number: string) {
+    return this.service.getCustomerById(phone_number);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
   create(@Body() dto: CreateCustomerDto) {
     return this.service.create(dto);
-  }
-
-  @Get('today')
-  getTodayCustomers() {
-    return this.service.getTodayCustomers();
   }
 }

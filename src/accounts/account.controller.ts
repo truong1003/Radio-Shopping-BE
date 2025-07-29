@@ -1,5 +1,15 @@
 // src/account/account.controller.ts
-import { Controller, Get, Post, Body, UseGuards, Request, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './account.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -12,8 +22,13 @@ export class AccountController {
   constructor(private readonly service: AccountService) {}
 
   @Get()
-  getAll() {
-    return this.service.findAll();
+  getAll(@Query('search') search?: string) {
+    return this.service.findAll(search);
+  }
+
+  @Get('user')
+  getAllUser() {
+    return this.service.findAllUser();
   }
 
   @Post()
@@ -33,5 +48,10 @@ export class AccountController {
   @Get('profile/:id')
   async getAccount(@Param('id') id: string) {
     return this.service.findById(+id);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.service.remove(+id);
   }
 }

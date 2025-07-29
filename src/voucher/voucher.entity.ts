@@ -46,6 +46,9 @@ export class Voucher {
   @Column({ type: 'int' })
   total_voucher: number;
 
+  @Column({ type: 'int' })
+  voucher_sended: number;
+
   @Column({ default: false })
   deleted: boolean;
 

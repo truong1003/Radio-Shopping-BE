@@ -4,12 +4,14 @@ import { Repository } from 'typeorm';
 import { Product } from './product.entity';
 import { CreateProductDto } from './product.dto';
 import { Brand } from '../brands/brand.entity';
+import { Customer } from 'src/customers/customer.entity';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product) private repo: Repository<Product>,
     @InjectRepository(Brand) private brandRepo: Repository<Brand>,
+    @InjectRepository(Customer) private customerRepo: Repository<Customer>,
   ) {}
   async findAll(search?: string) {
     const query = this.repo
@@ -25,6 +27,10 @@ export class ProductService {
     query.orderBy('product.createdAt', 'DESC');
 
     return query.getMany();
+  }
+
+  async findDetail(product: string) {
+    return this.customerRepo.findOne({ where: { product: product } });
   }
 
   // async findOneWithAuth(id: number, user: { userId: number; role: string }) {

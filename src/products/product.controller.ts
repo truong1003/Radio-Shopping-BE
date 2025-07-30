@@ -28,6 +28,12 @@ export class ProductController {
     return this.service.findAll(search);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('detail/:product')
+  findDetail(@Param('id') product: string) {
+    return this.service.findDetail(product);
+  }
+
   // @UseGuards(JwtAuthGuard)
   // @Get(':id')
   // findOne(@Param('id') id: string, @Request() req) {

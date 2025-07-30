@@ -34,10 +34,17 @@ export class BrandService {
   }
 
   async findOneWithAuth(id: number, user: { userId: number; role: string }) {
-    const brand = await this.repo.findOne({
-      where: { id },
-      relations: ['account', 'products', 'vouchers', 'customers'],
-    });
+    const query = this.repo
+      .createQueryBuilder('brand')
+      .leftJoinAndSelect('brand.account', 'account')
+      .leftJoinAndSelect('brand.products', 'products')
+      .leftJoinAndSelect('brand.vouchers', 'vouchers')
+      .leftJoinAndSelect('brand.schedules', 'schedules')
+      .leftJoinAndSelect('brand.customers', 'customers')
+      .where('brand.id = :id', { id })
+      .orderBy('customers.createdAt', 'DESC');
+
+    const brand = await query.getOne();
 
     if (!brand) {
       throw new NotFoundException('Brand not found');

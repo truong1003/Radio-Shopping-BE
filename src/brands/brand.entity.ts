@@ -55,9 +55,8 @@ export class Brand {
   @Column({ default: false })
   deleted: boolean;
 
-  @ManyToOne(() => Account, { onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'account_id' })
-  account: Account;
+  @OneToMany(() => Account, (account) => account.brand)
+  accounts: Account[];
 
   @OneToMany(() => Product, (product) => product.brand)
   products: Product[];

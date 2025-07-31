@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { CreateScheduleDto, UpdateScheduleDto } from './schedule.dto';
 import { Brand } from 'src/brands/brand.entity';
 import { LiveStatus } from 'src/types/type';
+import { Account } from 'src/accounts/account.entity';
 
 @Injectable()
 export class ScheduleService {
@@ -13,6 +14,7 @@ export class ScheduleService {
     @InjectRepository(Schedule)
     private readonly repo: Repository<Schedule>,
     @InjectRepository(Brand) private brandRepo: Repository<Brand>,
+    @InjectRepository(Account) private accountRepo: Repository<Account>,
   ) {}
 
   getScheduleStatus(schedule: Schedule): LiveStatus {
@@ -44,34 +46,82 @@ export class ScheduleService {
     return this.repo.save(schedule);
   }
 
-  async findAll() {
-    const schedules = await this.repo.find();
+  async findAll(user: { userId: number; role: string }) {
+    if (user.role === 'admin') {
+      const schedules = await this.repo.find();
 
-    for (const schedule of schedules) {
-      const newStatus = this.getScheduleStatus(schedule);
-      if (schedule.status !== newStatus) {
-        schedule.status = newStatus;
-        await this.repo.save(schedule);
+      for (const schedule of schedules) {
+        const newStatus = this.getScheduleStatus(schedule);
+        if (schedule.status !== newStatus) {
+          schedule.status = newStatus;
+          await this.repo.save(schedule);
+        }
       }
+
+      const sortedSchedules = await this.repo.find({ relations: ['brand'] });
+
+      return sortedSchedules.sort((a, b) => {
+        const aStart = dayjs(`${a.date}T${a.time.split('-')[0].trim()}`);
+        const bStart = dayjs(`${b.date}T${b.time.split('-')[0].trim()}`);
+        return aStart.diff(bStart);
+      });
     }
 
-    const sortedSchedules = await this.repo.find({ relations: ['brand'] });
+    if (user.role === 'brand') {
+      const account = await this.accountRepo.findOne({
+        where: { id: user.userId },
+        relations: ['brand'],
+      });
 
-    return sortedSchedules.sort((a, b) => {
-      const aStart = dayjs(`${a.date}T${a.time.split('-')[0].trim()}`);
-      const bStart = dayjs(`${b.date}T${b.time.split('-')[0].trim()}`);
-      return aStart.diff(bStart);
-    });
+      if (!account?.brand) {
+        throw new Error('Tài khoản không có thương hiệu liên kết.');
+      }
+
+      const schedules = await this.repo.find({
+        where: {
+          brand: { id: account?.brand.id },
+        },
+        relations: ['brand'],
+      });
+
+      return schedules.sort((a, b) => {
+        const aStart = dayjs(`${a.date}T${a.time.split('-')[0].trim()}`);
+        const bStart = dayjs(`${b.date}T${b.time.split('-')[0].trim()}`);
+        return aStart.diff(bStart);
+      });
+    }
   }
 
-  async findAllToDay() {
-    const schedulesToday = await this.repo
-      .createQueryBuilder('schedule')
-      .leftJoinAndSelect('schedule.brand', 'brand')
-      .where('DATE(schedule.date) = CURDATE()')
-      .getMany();
+  async findAllToDay(user: { userId: number; role: string }) {
+    if (user.role === 'admin') {
+      const schedulesToday = await this.repo
+        .createQueryBuilder('schedule')
+        .leftJoinAndSelect('schedule.brand', 'brand')
+        .where('DATE(schedule.date) = CURDATE()')
+        .getMany();
 
-    return schedulesToday;
+      return schedulesToday;
+    }
+
+    if (user.role === 'brand') {
+      const account = await this.accountRepo.findOne({
+        where: { id: user.userId },
+        relations: ['brand'],
+      });
+
+      if (!account?.brand) {
+        throw new Error('Tài khoản không có thương hiệu liên kết.');
+      }
+
+      const schedulesToday = await this.repo
+        .createQueryBuilder('schedule')
+        .leftJoinAndSelect('schedule.brand', 'brand')
+        .where('DATE(schedule.date) = CURDATE()')
+        .andWhere('schedule.brand_id = :brandId', { brandId: account.brand.id })
+        .getMany();
+
+      return schedulesToday;
+    }
   }
 
   findOne(id: number) {

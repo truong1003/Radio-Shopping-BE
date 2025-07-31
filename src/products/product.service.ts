@@ -5,6 +5,7 @@ import { Product } from './product.entity';
 import { CreateProductDto } from './product.dto';
 import { Brand } from '../brands/brand.entity';
 import { Customer } from 'src/customers/customer.entity';
+import { Account } from 'src/accounts/account.entity';
 
 @Injectable()
 export class ProductService {
@@ -12,25 +13,67 @@ export class ProductService {
     @InjectRepository(Product) private repo: Repository<Product>,
     @InjectRepository(Brand) private brandRepo: Repository<Brand>,
     @InjectRepository(Customer) private customerRepo: Repository<Customer>,
+    @InjectRepository(Account) private accountRepo: Repository<Account>,
   ) {}
-  async findAll(search?: string) {
-    const query = this.repo
-      .createQueryBuilder('product')
-      .leftJoinAndSelect('product.brand', 'brand');
+  async findAll(user: { userId: number; role: string }, search?: string) {
+    if (user.role === 'admin') {
+      const query = this.repo
+        .createQueryBuilder('product')
+        .leftJoinAndSelect('product.brand', 'brand');
 
-    if (search?.trim()) {
-      query.andWhere(`(brand.title_brand LIKE :search OR product.title_product LIKE :search)`, {
-        search: `%${search}%`,
-      });
+      if (search?.trim()) {
+        query.andWhere(`(brand.title_brand LIKE :search OR product.title_product LIKE :search)`, {
+          search: `%${search}%`,
+        });
+      }
+
+      query.orderBy('product.createdAt', 'DESC');
+
+      return query.getMany();
     }
 
-    query.orderBy('product.createdAt', 'DESC');
+    if (user.role === 'brand') {
+      const account = await this.accountRepo.findOne({
+        where: { id: user.userId },
+        relations: ['brand'],
+      });
 
-    return query.getMany();
+      if (!account?.brand) {
+        throw new Error('Tài khoản không có thương hiệu liên kết.');
+      }
+
+      const query = this.repo
+        .createQueryBuilder('product')
+        .leftJoinAndSelect('product.brand', 'brand')
+        .where('brand.id = :brandId', { brandId: account.brand.id });
+
+      if (search?.trim()) {
+        query.andWhere('(brand.title_brand LIKE :search OR product.title_product LIKE :search)', {
+          search: `%${search}%`,
+        });
+      }
+
+      query.orderBy('product.createdAt', 'DESC');
+
+      return query.getMany();
+    }
   }
 
-  async findDetail(product: string) {
-    return this.customerRepo.findOne({ where: { product: product } });
+  async findDetail(id: number) {
+    const product = await this.repo.findOne({ where: { id: id }, relations: ['brand'] });
+
+    if (!product) {
+      throw new Error('Không tìm thấy sản phẩm.');
+    }
+
+    const customers = await this.customerRepo.find({
+      where: { product: product.title_product },
+    });
+
+    return {
+      product,
+      customers,
+    };
   }
 
   // async findOneWithAuth(id: number, user: { userId: number; role: string }) {
@@ -52,7 +95,6 @@ export class ProductService {
 
     const brand = await this.brandRepo.findOne({
       where: { title_brand: dto.title_brand },
-      relations: ['account'],
     });
 
     if (!brand) throw new NotFoundException('Brand not found');

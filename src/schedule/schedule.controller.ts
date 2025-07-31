@@ -1,4 +1,14 @@
-import { Controller, Post, Body, Get, Param, Put, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Put,
+  Delete,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { ScheduleService } from './schedule.service';
 import { CreateScheduleDto, UpdateScheduleDto } from './schedule.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -17,14 +27,18 @@ export class ScheduleController {
     return this.service.create(dto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
-  findAll() {
-    return this.service.findAll();
+  findAll(@Request() req) {
+    const user = req.user;
+    return this.service.findAll(user);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('today')
-  findAllToDay() {
-    return this.service.findAllToDay();
+  findAllToDay(@Request() req) {
+    const user = req.user
+    return this.service.findAllToDay(user);
   }
 
   @Get(':id')

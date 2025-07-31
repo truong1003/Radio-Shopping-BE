@@ -16,7 +16,7 @@ export class BrandService {
   async findAll(search?: string) {
     const query = this.repo
       .createQueryBuilder('brand')
-      .leftJoinAndSelect('brand.account', 'account')
+      .leftJoinAndSelect('brand.accounts', 'accounts')
       .leftJoinAndSelect('brand.products', 'products')
       .leftJoinAndSelect('brand.vouchers', 'vouchers')
       .leftJoinAndSelect('brand.customers', 'customers')
@@ -36,7 +36,7 @@ export class BrandService {
   async findOneWithAuth(id: number, user: { userId: number; role: string }) {
     const query = this.repo
       .createQueryBuilder('brand')
-      .leftJoinAndSelect('brand.account', 'account')
+      .leftJoinAndSelect('brand.accounts', 'accounts')
       .leftJoinAndSelect('brand.products', 'products')
       .leftJoinAndSelect('brand.vouchers', 'vouchers')
       .leftJoinAndSelect('brand.schedules', 'schedules')
@@ -50,7 +50,7 @@ export class BrandService {
       throw new NotFoundException('Brand not found');
     }
 
-    if (user.role !== 'admin' && brand.account.id !== user.userId) {
+    if (user.role !== 'admin' && !brand.accounts.some((acc) => acc.id === user.userId)) {
       throw new ForbiddenException('You are not allowed to access this brand');
     }
 
@@ -58,9 +58,6 @@ export class BrandService {
   }
 
   async create(dto: CreateBrandDto) {
-    const account = await this.accountRepo.findOneBy({ email: dto.email });
-    if (!account) throw new NotFoundException('Account not found');
-
     const brand = this.repo.create({
       title_brand: dto.title_brand,
       name: dto.name,
@@ -69,7 +66,6 @@ export class BrandService {
       tags: dto.tags,
       description: dto.description,
       status: Status.active,
-      account,
     });
     return this.repo.save(brand);
   }

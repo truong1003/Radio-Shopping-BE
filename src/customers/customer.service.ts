@@ -6,6 +6,7 @@ import { Customer } from './customer.entity';
 import { CreateCustomerDto } from './customer.dto';
 import { Voucher } from 'src/voucher/voucher.entity';
 import { History } from 'src/history/history.entity';
+import { Account } from 'src/accounts/account.entity';
 
 @Injectable()
 export class CustomerService {
@@ -14,6 +15,7 @@ export class CustomerService {
     @InjectRepository(Brand) private brandRepo: Repository<Brand>,
     @InjectRepository(Voucher) private voucherRepo: Repository<Voucher>,
     @InjectRepository(History) private historyRepo: Repository<History>,
+    @InjectRepository(Account) private accountRepo: Repository<Account>,
   ) {}
 
   async findAll(phone?: string) {
@@ -28,32 +30,68 @@ export class CustomerService {
     });
   }
 
-  async getTodayCustomers() {
+  async getTodayCustomers(user: { userId: number; role: string }) {
     const today = new Date();
     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
     const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
-    const todayCustomers = await this.repo.find({
-      where: {
-        createdAt: Between(startOfDay, endOfDay),
-      },
-      relations: ['brand'],
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+    let todayCustomers: any[] = [];
+    let oldCustomers: { phone_number: string }[] = [];
 
-    const oldCustomers = await this.repo
-      .createQueryBuilder('customer')
-      .select('DISTINCT customer.phone_number', 'phone_number')
-      .where('customer.createdAt < :startOfDay', { startOfDay })
-      .getRawMany();
+    if (user.role === 'admin') {
+      todayCustomers = await this.repo.find({
+        where: {
+          createdAt: Between(startOfDay, endOfDay),
+        },
+        relations: ['brand'],
+        order: { createdAt: 'DESC' },
+      });
 
-    const oldPhoneNumbers = oldCustomers.map((c) => c.phone_number);
+      oldCustomers = await this.repo
+        .createQueryBuilder('customer')
+        .select('DISTINCT customer.phone_number', 'phone_number')
+        .where('customer.createdAt < :startOfDay', { startOfDay })
+        .getRawMany();
+    }
 
-    const newTodayCustomers = todayCustomers.filter(
-      (c) => !oldPhoneNumbers.includes(c.phone_number),
-    );
+    if (user.role === 'brand') {
+      const account = await this.accountRepo.findOne({
+        where: { id: user.userId },
+        relations: ['brand'],
+      });
+
+      if (!account?.brand) {
+        throw new Error('Tài khoản không có thương hiệu liên kết.');
+      }
+
+      todayCustomers = await this.repo.find({
+        where: {
+          brand: { id: account.brand.id },
+          createdAt: Between(startOfDay, endOfDay),
+        },
+        relations: ['brand'],
+        order: { createdAt: 'DESC' },
+      });
+
+      oldCustomers = await this.repo
+        .createQueryBuilder('customer')
+        .leftJoin('customer.brand', 'brand')
+        .select('DISTINCT customer.phone_number', 'phone_number')
+        .where('customer.createdAt < :startOfDay', { startOfDay })
+        .andWhere('brand.id = :brandId', { brandId: account.brand.id })
+        .getRawMany();
+    }
+
+    const oldPhoneSet = new Set(oldCustomers.map((c) => c.phone_number));
+
+    const newTodayCustomersMap = new Map<string, (typeof todayCustomers)[0]>();
+    for (const customer of todayCustomers) {
+      if (!oldPhoneSet.has(customer.phone_number)) {
+        newTodayCustomersMap.set(customer.phone_number, customer);
+      }
+    }
+
+    const newTodayCustomers = Array.from(newTodayCustomersMap.values());
 
     return {
       todayCustomers,
@@ -119,7 +157,6 @@ export class CustomerService {
   async create(dto: CreateCustomerDto) {
     const brand = await this.brandRepo.findOne({
       where: { title_brand: dto.brand_favorite },
-      relations: ['account'],
     });
 
     if (!brand) throw new NotFoundException('Brand not found');

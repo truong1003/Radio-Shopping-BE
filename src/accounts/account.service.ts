@@ -11,6 +11,7 @@ import { Account } from './account.entity';
 import { CreateAccountDto } from './account.dto';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/types/type';
+import { Brand } from 'src/brands/brand.entity';
 
 const SALT_ROUNDS = 10;
 @Injectable()
@@ -18,11 +19,15 @@ export class AccountService {
   constructor(
     @InjectRepository(Account)
     private accountRepo: Repository<Account>,
+
+    @InjectRepository(Brand)
+    private brandRepo: Repository<Brand>,
   ) {}
 
   findAll(search?: string) {
     const query = this.accountRepo
       .createQueryBuilder('account')
+      .leftJoinAndSelect('account.brand', 'brand')
       .where('account.role IN (:...roles)', { roles: [Role.user, Role.brand] });
 
     if (search?.trim()) {
@@ -47,14 +52,24 @@ export class AccountService {
 
       const hashedPassword = await bcrypt.hash(dto.password, SALT_ROUNDS);
 
+      let brand: Brand | null = null;
+
+      if (dto.brandId) {
+        brand = await this.brandRepo.findOne({ where: { id: Number(dto.brandId) } });
+        if (!brand) throw new NotFoundException('Brand không tồn tại');
+      }
+
       const account = this.accountRepo.create({
-        ...dto,
-        role: dto.role as Role,
+        email: dto.email,
+        name: dto.name,
         password: hashedPassword,
+        role: dto.role as Role,
+        ...(brand && { brand }),
       });
+
       return await this.accountRepo.save(account);
     } catch (error) {
-      if (error instanceof BadRequestException) {
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
         throw error;
       }
 

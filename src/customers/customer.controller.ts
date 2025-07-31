@@ -31,9 +31,11 @@ export class CustomerController {
     return this.service.getPhoneStatsWithLatestCustomer(search);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('today')
-  getTodayCustomers() {
-    return this.service.getTodayCustomers();
+  getTodayCustomers(@Request() req) {
+    const user = req.user
+    return this.service.getTodayCustomers(user);
   }
 
   @Get(':phone_number')

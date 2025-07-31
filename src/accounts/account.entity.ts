@@ -4,10 +4,10 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
   UpdateDateColumn,
   CreateDateColumn,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity()
@@ -39,6 +39,7 @@ export class Account {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Brand, (brand) => brand.account)
-  brands: Brand[];
+  @ManyToOne(() => Brand, (brand) => brand.accounts, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'brand_id' })
+  brand: Brand | null;
 }

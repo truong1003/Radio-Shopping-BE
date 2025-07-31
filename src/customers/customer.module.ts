@@ -4,17 +4,12 @@ import { Customer } from './customer.entity';
 import { Brand } from 'src/brands/brand.entity';
 import { CustomerController } from './customer.controller';
 import { CustomerService } from './customer.service';
-import { Voucher } from 'src/voucher/voucher.entity';
-import { History } from 'src/history/history.entity';
 import { VoucherModule } from 'src/voucher/voucher.module';
 import { HistoryModule } from 'src/history/history.module';
+import { Account } from 'src/accounts/account.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Customer, Brand]), // Chỉ cần Customer và Brand ở đây
-    VoucherModule, // 👈 Thêm dòng này
-    HistoryModule, // 👈 Thêm dòng này
-  ],
+  imports: [TypeOrmModule.forFeature([Customer, Brand, Account]), VoucherModule, HistoryModule],
   controllers: [CustomerController],
   providers: [CustomerService],
 })

@@ -22,16 +22,16 @@ export class ProductController {
   constructor(private readonly service: ProductService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.admin)
   @Get()
-  findAll(@Query('search') search?: string) {
-    return this.service.findAll(search);
+  findAll(@Request() req, @Query('search') search?: string) {
+    const user = req.user;
+    return this.service.findAll(user, search);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Get('detail/:product')
-  findDetail(@Param('id') product: string) {
-    return this.service.findDetail(product);
+  @Get('detail/:id')
+  findDetail(@Param('id') id: string) {
+    return this.service.findDetail(+id);
   }
 
   // @UseGuards(JwtAuthGuard)

@@ -21,9 +21,13 @@ export class AuthService {
   }
 
   login(user: Account) {
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.id, email: user.email, role: user.role, name: user.name };
     return {
       access_token: this.jwtService.sign(payload),
     };
+  }
+
+  async getFindOne(user: { userId: number; role: string }) {
+    return this.accountRepo.findOne({ where: { id: user.userId }, relations: ['brand'] });
   }
 }

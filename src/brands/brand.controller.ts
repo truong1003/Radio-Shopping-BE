@@ -27,6 +27,13 @@ export class BrandController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('detail')
+  findBrand(@Request() req) {
+    const user = req.user;
+    return this.service.findBrand(user);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string, @Request() req) {
     const user = req.user;

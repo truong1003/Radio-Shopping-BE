@@ -32,4 +32,10 @@ export class AuthController {
   getProfile(@Request() req) {
     return req.user;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getFindOne(@Request() req) {
+    return this.authService.getFindOne(req.user);
+  }
 }

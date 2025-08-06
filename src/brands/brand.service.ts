@@ -57,6 +57,37 @@ export class BrandService {
     return brand;
   }
 
+  async findBrand(user: { userId: number; role: string }) {
+    // 1. Lấy account kèm relation brand
+    const account = await this.accountRepo.findOne({
+      where: { id: user.userId },
+      relations: ['brand'],
+    });
+    if (!account || !account.brand) {
+      throw new NotFoundException('Account or Brand not found');
+    }
+
+    const brandId = account.brand.id;
+
+    // 2. Build query lấy brand
+    const brand = await this.repo
+      .createQueryBuilder('brand')
+      .leftJoinAndSelect('brand.accounts', 'accounts')
+      .leftJoinAndSelect('brand.products', 'products')
+      .leftJoinAndSelect('brand.vouchers', 'vouchers')
+      .leftJoinAndSelect('brand.schedules', 'schedules')
+      .leftJoinAndSelect('brand.customers', 'customers')
+      .where('brand.id = :id', { id: brandId })
+      .orderBy('customers.createdAt', 'DESC')
+      .getOne();
+
+    if (!brand) {
+      throw new NotFoundException('Brand not found');
+    }
+
+    return brand;
+  }
+
   async create(dto: CreateBrandDto) {
     const brand = this.repo.create({
       title_brand: dto.title_brand,

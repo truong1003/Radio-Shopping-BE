@@ -46,7 +46,7 @@ export class Voucher {
   @Column({ type: 'int' })
   total_voucher: number;
 
-  @Column({ type: 'int' })
+  @Column({ default: 0, type: 'int' })
   voucher_sended: number;
 
   @Column({ default: false })

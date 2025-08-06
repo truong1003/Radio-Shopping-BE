@@ -7,10 +7,11 @@
   "license": "UNLICENSED",
   "main": "dist/main.js",
   "scripts": {
-    "prestart": "npm run build", 
+    "postinstall": "npm run build",
+    "start": "node dist/main",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "node dist/main",
+    "prestart": "npm run build", 
     "start:dev": "nodemon",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
